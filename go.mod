@@ -1,4 +1,4 @@
-module github.com/mr-shitij/RediSearch/redisearch-go/v2
+module github.com/RediSearch/redisearch-go/v2
 
 go 1.16
 
