@@ -114,8 +114,6 @@ func (i *Client) Search(q *Query) (docs []Document, total int, err error) {
 	args := redis.Args{i.name}
 	args = append(args, q.serialize()...)
 
-	fmt.Println("FT.SEARCH ", args)
-
 	res, err := redis.Values(conn.Do("FT.SEARCH", args...))
 	if err != nil {
 		return
