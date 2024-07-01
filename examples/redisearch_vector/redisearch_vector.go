@@ -13,16 +13,18 @@ import (
 	"time"
 )
 
+// Constants for configuration
 const (
 	INDEX_NAME = "MY_INDEX"
-	DIMS       = 1536
-	DB         = 0
+	DIMS       = 1536 // Dimensions for the vector embeddings
+	DB         = 0    // Redis database number
 	API_KEY    = "SOME_OPENAI_API_KEY"
 	TIMEOUT    = 30 * time.Second
 	ADDRESS    = "localhost:6379"
 	PASSWORD   = "secrete_password"
 )
 
+// InitRedis initializes and returns a Redis client
 func InitRedis() (*redisearch.Client, error) {
 	pool := &redis.Pool{
 		Dial: func() (redis.Conn, error) {
@@ -37,6 +39,7 @@ func InitRedis() (*redisearch.Client, error) {
 	return client, nil
 }
 
+// CreateSchema sets up the Redis search index schema
 func CreateSchema(database *redisearch.Client) error {
 	sc := redisearch.NewSchema(redisearch.DefaultOptions).
 		AddField(redisearch.NewTextFieldOptions("chat", redisearch.TextFieldOptions{NoStem: true, NoIndex: true})).
@@ -58,6 +61,7 @@ func CreateSchema(database *redisearch.Client) error {
 	return nil
 }
 
+// AddVector adds a new vector to the Redis index
 func AddVector(chat string, database *redisearch.Client) error {
 	key := uuid.New().String()
 	vector, err := ApiEmbedding(chat)
@@ -76,6 +80,7 @@ func AddVector(chat string, database *redisearch.Client) error {
 	return nil
 }
 
+// ApiEmbedding generates an embedding for the given input using OpenAI API
 func ApiEmbedding(input string) ([]float32, error) {
 	input = strings.TrimSpace(input)
 	if input == "" {
@@ -104,7 +109,9 @@ func ApiEmbedding(input string) ([]float32, error) {
 	return embedding, nil
 }
 
+// AddData populates the Redis index with sample data
 func AddData(client *redisearch.Client) error {
+	// ... [sample data]
 	data := []struct {
 		category string
 		texts    []string
@@ -165,6 +172,7 @@ func AddData(client *redisearch.Client) error {
 	return nil
 }
 
+// SearchInVectorCache performs a KNN search in the Redis index
 func SearchInVectorCache(userQueryEmbedding []float32, database *redisearch.Client) (docs []redisearch.Document, total int, err error) {
 	maxLimit := 5
 	userQueryParsed := rueidis.VectorString32(userQueryEmbedding)
