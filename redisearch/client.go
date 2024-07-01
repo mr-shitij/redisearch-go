@@ -2,7 +2,6 @@ package redisearch
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"reflect"
 	"strconv"
@@ -48,11 +47,6 @@ func NewClientFromPool(pool *redis.Pool, name string) *Client {
 	return ret
 }
 
-// SetIndexName set the index name
-func (i *Client) SetIndexName(name string) {
-	i.name = name
-}
-
 // CreateIndex configures the index and creates it on redis
 func (i *Client) CreateIndex(schema *Schema) (err error) {
 	return i.indexWithDefinition(i.name, schema, nil)
@@ -93,11 +87,6 @@ func (i *Client) AddField(f Field) error {
 	defer conn.Close()
 	_, err = conn.Do("FT.ALTER", args...)
 	return err
-}
-
-// GetConnection to get the connection
-func (i *Client) GetConnection() redis.Conn {
-	return i.pool.Get()
 }
 
 // Index indexes a list of documents with the default options
@@ -141,11 +130,10 @@ func (i *Client) Search(q *Query) (docs []Document, total int, err error) {
 		fieldsIdx = skip
 		skip++
 	}
-
 	if len(res) > skip {
 		for i := 1; i < len(res); i += skip {
 
-			if d, e := LoadDocument(res, i, scoreIdx, payloadIdx, fieldsIdx); e == nil {
+			if d, e := loadDocument(res, i, scoreIdx, payloadIdx, fieldsIdx); e == nil {
 				docs = append(docs, d)
 			} else {
 				log.Print("Error parsing doc: ", e)
